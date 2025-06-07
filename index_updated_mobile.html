@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spin A Wheel</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 25%, #2c3e50 50%, #4a6741 75%, #2c5530 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 30px;
+      z-index: 100;
+    }
+
+    .header h1 {
+      color: #f8f9fa;
+      font-size: 1.4rem;
+      font-weight: 600;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(25px);
+      border-radius: 30px;
+      padding: 50px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      margin-top: 70px;
+    }
+
+    .main-title {
+      color: #f8f9fa;
+      font-size: 2.5rem;
+      font-weight: 300;
+      text-align: center;
+      margin-bottom: 30px;
+      text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .input-section {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .checkbox-section {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .checkbox-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      user-select: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .checkbox-container:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-checkbox {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .custom-checkbox::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      background: linear-gradient(45deg, #4ecdc4, #44a08d);
+      transition: transform 0.2s ease;
+    }
+
+    .hidden-checkbox {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .hidden-checkbox:checked + .custom-checkbox {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: #4ecdc4;
+      box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+    }
+
+    .hidden-checkbox:checked + .custom-checkbox::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #nameInput {
+      padding: 15px 20px;
+      width: 280px;
+      border: none;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      font-size: 16px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    #nameInput::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    #nameInput:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.02);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    #addNameBtn {
+      padding: 15px 25px;
+      border: none;
+      background: linear-gradient(45deg, #4ecdc4, #44a08d);
+      color: white;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(68, 160, 141, 0.3);
+    }
+
+    #addNameBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(68, 160, 141, 0.4);
+    }
+
+    #spinnerContainer {
+      position: relative;
+      width: 450px;
+      height: 450px;
+      margin: 0 auto;
+    }
+
+    #spinnerCanvas {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.2));
+    }
+
+    #spinBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(45deg, #81c784, #66bb6a);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(102, 187, 106, 0.4);
+      border: 4px solid rgba(255, 255, 255, 0.9);
+    }
+
+    #spinBtn:hover {
+      transform: translate(-50%, -50%) scale(1.05);
+      box-shadow: 0 15px 40px rgba(102, 187, 106, 0.5);
+    }
+
+    #spinBtn:active {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+
+    #arrow {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 30px solid #7986cb;
+      z-index: 10;
+      filter: drop-shadow(0 5px 15px rgba(121, 134, 203, 0.4));
+    }
+
+    .instructions {
+      color: rgba(255, 255, 255, 0.8);
+      text-align: center;
+      margin-top: 25px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .winner-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: linear-gradient(45deg, #4ecdc4, #44a08d);
+      color: white;
+      padding: 30px 40px;
+      border-radius: 20px;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .winner-popup.show {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    .spinning #spinBtn {
+      animation: pulse 0.5s infinite;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.2rem;
+      }
+      
+      .container {
+        padding: 30px;
+        margin-top: 60px;
+      }
+      
+      .main-title {
+        font-size: 2rem;
+      }
+      
+      #spinnerContainer {
+        width: 350px;
+        height: 350px;
+      }
+    }
+  
+@media (max-width: 480px) {
+  .container {
+    padding: 20px;
+    margin-top: 50px;
+  }
+
+  .main-title {
+    font-size: 1.6rem;
+  }
+
+  .input-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #nameInput {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+
+  #addNameBtn {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  #spinnerContainer {
+    width: 280px;
+    height: 280px;
+  }
+
+  #spinBtn {
+    width: 80px;
+    height: 80px;
+    font-size: 14px;
+  }
+
+  .checkbox-container {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .instructions {
+    font-size: 12px;
+    padding: 0 10px;
+  }
+
+  .winner-popup {
+    padding: 20px 25px;
+    font-size: 18px;
+  }
+}
+
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>SPIN A WHEEL</h1>
+  </div>
+
+  <div class="container">
+    <h2 class="main-title">🎡 Spinner Wheel</h2>
+    
+    <div class="input-section">
+      <input type="text" id="nameInput" placeholder="Enter a name to add" />
+      <button id="addNameBtn">Add Name</button>
+    </div>
+
+    <div class="checkbox-section">
+      <label class="checkbox-container">
+        <input type="checkbox" id="removeWinnerCheckbox" class="hidden-checkbox">
+        <div class="custom-checkbox"></div>
+        <span>Remove winner after spin</span>
+      </label>
+    </div>
+
+    <div id="spinnerContainer">
+      <div id="arrow"></div>
+      <canvas id="spinnerCanvas"></canvas>
+      <button id="spinBtn">SPIN</button>
+    </div>
+
+    <div class="instructions">
+      Click on any name in the wheel to remove it instantly<br>
+      Add at least 2 names to start spinning
+    </div>
+  </div>
+
+  <div id="winnerPopup" class="winner-popup"></div>
+
+  <script>
+    const canvas = document.getElementById("spinnerCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = 450;
+    canvas.height = 450;
+
+    let names = [];
+    let colors = [];
+    let angle = 0;
+    let spinning = false;
+    let spinSpeed = 0;
+
+    function getRandomColor() {
+      const darkColors = [
+        'hsl(200, 60%, 45%)', // Dark blue
+        'hsl(280, 50%, 50%)', // Dark purple
+        'hsl(340, 55%, 50%)', // Dark pink
+        'hsl(25, 65%, 55%)',  // Dark orange
+        'hsl(120, 50%, 45%)', // Dark green
+        'hsl(60, 60%, 50%)',  // Dark yellow
+        'hsl(180, 55%, 45%)', // Dark teal
+        'hsl(300, 45%, 50%)', // Dark magenta
+      ];
+      return darkColors[Math.floor(Math.random() * darkColors.length)];
+    }
+
+    function drawWheel() {
+      const radius = canvas.width / 2 - 20;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Always draw empty wheel when no names
+      if (names.length === 0) {
+        // Draw empty wheel with visible border
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Add names to get started!', centerX, centerY);
+        return;
+      }
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle);
+
+      const sliceAngle = (2 * Math.PI) / names.length;
+
+      // Draw wheel segments with texture
+      for (let i = 0; i < names.length; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, i * sliceAngle, (i + 1) * sliceAngle);
+        
+        // Create gradient for each slice
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+        gradient.addColorStop(0, colors[i]);
+        gradient.addColorStop(0.7, colors[i]);
+        
+        // Create darker version for outer edge
+        const darkerColor = colors[i].replace(/,\s*[\d.]+%\)/, ', 45%)');
+        gradient.addColorStop(1, darkerColor);
+        
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // Add border between segments
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Draw text with adaptive sizing
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
+      
+      for (let i = 0; i < names.length; i++) {
+        ctx.save();
+        
+        const textAngle = i * sliceAngle + sliceAngle / 2;
+        ctx.rotate(textAngle);
+        
+        // Calculate maximum text size based on slice width and radius
+        const maxWidth = radius * 0.7;
+        const sliceWidth = sliceAngle * radius * 0.6;
+        
+        // Calculate optimal font size
+        let fontSize = Math.min(24, sliceWidth / names[i].length * 3);
+        fontSize = Math.max(10, Math.min(28, fontSize));
+        
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        
+        // Position text
+        const textRadius = radius * 0.65;
+        ctx.translate(textRadius, 0);
+        
+        // Add text shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillText(names[i], 1, 1);
+        
+        // Draw main text
+        ctx.fillStyle = 'white';
+        ctx.fillText(names[i], 0, 0);
+        
+        ctx.restore();
+      }
+
+      // Draw outer ring
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function showWinner(name) {
+      const popup = document.getElementById('winnerPopup');
+      popup.innerHTML = `🎉 Winner: ${name}! 🎉`;
+      popup.classList.add('show');
+      
+      // Reduced time from 3000ms to 1500ms
+      setTimeout(() => {
+        popup.classList.remove('show');
+      }, 1500);
+    }
+
+    function getWinnerIndex() {
+      if (names.length === 0) return -1;
+      
+      // The arrow is at the top pointing down
+      // We need to find which segment is directly below the arrow
+      const sliceAngle = (2 * Math.PI) / names.length;
+      
+      // Normalize the current angle
+      const normalizedAngle = ((angle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+      
+      // The arrow points to the top (270 degrees or 3π/2 radians in our coordinate system)
+      // We need to find which segment aligns with the top position
+      const topPosition = (3 * Math.PI / 2) - normalizedAngle;
+      const adjustedAngle = ((topPosition % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+      
+      const winnerIndex = Math.floor(adjustedAngle / sliceAngle);
+      return winnerIndex % names.length;
+    }
+
+    function animateSpin() {
+      if (spinning) {
+        angle += spinSpeed;
+        spinSpeed *= 0.985;
+
+        if (spinSpeed < 0.005) {
+          spinning = false;
+          spinSpeed = 0;
+          document.body.classList.remove('spinning');
+          
+          const winnerIndex = getWinnerIndex();
+          if (winnerIndex >= 0 && winnerIndex < names.length) {
+            const winnerName = names[winnerIndex];
+            showWinner(winnerName);
+            
+            // Check if winner should be removed
+            const removeWinnerCheckbox = document.getElementById('removeWinnerCheckbox');
+            if (removeWinnerCheckbox.checked) {
+              // Remove winner after a short delay to show the result
+              setTimeout(() => {
+                removeName(winnerIndex);
+              }, 2000);
+            }
+          }
+        }
+
+        drawWheel();
+        requestAnimationFrame(animateSpin);
+      }
+    }
+
+    function addName(name) {
+      if (name && !names.includes(name)) {
+        names.push(name);
+        colors.push(getRandomColor());
+        drawWheel();
+      }
+    }
+
+    function removeName(index) {
+      if (index >= 0 && index < names.length) {
+        names.splice(index, 1);
+        colors.splice(index, 1);
+        drawWheel();
+      }
+    }
+
+    document.getElementById("addNameBtn").addEventListener("click", () => {
+      const name = document.getElementById("nameInput").value.trim();
+      if (name) {
+        addName(name);
+        document.getElementById("nameInput").value = "";
+      }
+    });
+
+    document.getElementById("nameInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const name = document.getElementById("nameInput").value.trim();
+        if (name) {
+          addName(name);
+          document.getElementById("nameInput").value = "";
+        }
+      }
+    });
+
+    document.getElementById("spinBtn").addEventListener("click", () => {
+      if (names.length >= 2 && !spinning) {
+        spinSpeed = 0.4 + Math.random() * 0.3;
+        spinning = true;
+        document.body.classList.add('spinning');
+        animateSpin();
+      }
+    });
+
+    canvas.addEventListener("click", (e) => {
+      if (spinning || names.length === 0) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left - canvas.width / 2;
+      const y = e.clientY - rect.top - canvas.height / 2;
+      const distance = Math.sqrt(x * x + y * y);
+      
+      // Check if click is within the wheel
+      if (distance > canvas.width / 2 - 10 || distance < 50) return;
+      
+      const clickAngle = Math.atan2(y, x) - angle;
+      const normalizedAngle = ((clickAngle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+      const sliceAngle = (2 * Math.PI) / names.length;
+      const index = Math.floor(normalizedAngle / sliceAngle);
+      
+      removeName(index);
+    });
+
+    // Initialize
+    drawWheel();
+  
+// Refresh when all names are removed
+function removeName(index) {
+  if (index >= 0 && index < names.length) {
+    names.splice(index, 1);
+    colors.splice(index, 1);
+    drawWheel();
+    if (names.length === 0) {
+      setTimeout(() => {
+        location.reload();
+      }, 800);
+    }
+  }
+}
+
+// Hold spin functionality (keyboard, mouse, and touch)
+let spinHeld = false;
+
+function startSpinning() {
+  if (names.length >= 2 && !spinning) {
+    spinSpeed = 0.4 + Math.random() * 0.3;
+    spinning = true;
+    document.body.classList.add('spinning');
+    animateSpin();
+  }
+}
+function stopSpinning() {
+  spinHeld = false;
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Control" && !spinHeld) {
+    spinHeld = true;
+    startSpinning();
+  }
+});
+document.addEventListener("keyup", (e) => {
+  if (e.key === "Control") {
+    stopSpinning();
+  }
+});
+
+const spinBtn = document.getElementById("spinBtn");
+spinBtn.addEventListener("mousedown", () => {
+  spinHeld = true;
+  startSpinning();
+});
+document.addEventListener("mouseup", () => {
+  stopSpinning();
+});
+
+// Mobile touch support
+spinBtn.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  spinHeld = true;
+  startSpinning();
+}, { passive: false });
+
+spinBtn.addEventListener("touchend", (e) => {
+  e.preventDefault();
+  stopSpinning();
+});
+document.addEventListener("touchend", () => {
+  stopSpinning();
+});
+
+</script>
+</body>
+</html>
